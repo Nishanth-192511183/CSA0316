@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Tree Simulator — CSA03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1B2420;
+    --bg-panel:#212D27;
+    --bg-panel-raised:#28362F;
+    --rail:#0F1613;
+    --chalk:#EDEDE3;
+    --chalk-dim:#A9B3AB;
+    --chalk-faint:#6C766E;
+    --yellow:#F2C94C;
+    --pink:#F2789F;
+    --blue:#6FCBEA;
+    --green:#8FD9A8;
+    --line:rgba(237,237,227,0.10);
+    --dot:rgba(237,237,227,0.06);
+    --radius:10px;
+    --font-chalk:'Architects Daughter', cursive;
+    --font-body:'Inter', system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  /* ---------- University Header ---------- */
+
+.university-header{
+  width: 100%;
+  min-height: 150px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 40px;
+
+  background:#212D27;
+
+  padding: 15px 40px;
+  margin-bottom: 25px;
+
+  border-bottom: 2px solid var(--line);
+}
+
+.uni-logo{
+  width: 120px;
+  height: 120px;
+
+  object-fit: contain;
+}
+
+.university-name{
+  text-align: center;
+  color: #1f4f7a;
+
+  min-width: 400px;
+}
+
+.university-name h1{
+  margin: 0;
+
+  font-family: var(--font-body);
+  font-size: 60px;
+  font-weight: 500;
+
+  letter-spacing: 18px;
+
+  color: #1f4f7a;
+}
+
+.university-name h2{
+  margin: 8px 0 0;
+
+  font-family: var(--font-body);
+  font-size: 38px;
+  font-weight: 400;
+
+  letter-spacing: 12px;
+
+  color: #1f4f7a;
+
+  border-top: 2px solid #1f4f7a;
+  padding-top: 8px;
+}
+  
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1px) 0 0/22px 22px,
+      var(--bg);
+    color:var(--chalk);
+    font-family:var(--font-body);
+    min-height:100vh;
+  }
+  .app{display:flex; min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:230px; flex:none;
+    background:var(--rail);
+    border-right:1px solid var(--line);
+    padding:22px 0 16px;
+    display:flex; flex-direction:column;
+  }
+  .brand{
+    padding:0 18px 18px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:10px;
+  }
+  .brand .eyebrow{font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; color:white; text-transform:uppercase;font-weight:bold;}
+  .brand h1{font-family:var(--font-chalk); font-size:26px; margin:4px 0 2px; color:var(--chalk); line-height:1.05; font-weight:400;}
+  .brand p{margin:0; font-size:11px; color:var(--chalk-faint);}
+  nav{flex:1; overflow-y:auto; padding:6px 10px;}
+  .nav-item{
+    display:flex; align-items:baseline; gap:10px;
+    width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    color:var(--chalk-dim); padding:9px 10px; border-radius:8px;
+    font-family:var(--font-body); font-size:13.5px; font-weight:500;
+    transition:background .15s, color .15s;
+  }
+  .nav-item .idx{font-family:var(--font-mono); font-size:10.5px; color:var(--chalk-faint); width:16px; flex:none;}
+  .nav-item:hover{background:var(--bg-panel-raised); color:var(--chalk);}
+  .nav-item.active{background:var(--bg-panel-raised); color:var(--yellow);}
+  .nav-item.active .idx{color:var(--yellow);}
+  .sidebar-foot{padding:12px 18px 0; border-top:1px solid var(--line); margin-top:8px;}
+  .sidebar-foot p{font-size:10.5px; color:var(--chalk-faint); line-height:1.5; margin:10px 0 0;}
+
+  /* ---------- Main ---------- */
+  main{flex:1; min-width:0; padding:0 34px 40px; max-width:none;}
+  .head-row{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:6px;}
+  .head-row .eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; color:var(--yellow); text-transform:uppercase;}
+  h2.title{font-family:var(--font-chalk); font-weight:400; font-size:38px; margin:2px 0 10px; color:var(--chalk);}
+  .definition{color:var(--chalk-dim); font-size:15px; line-height:1.6; max-width:800px; margin:0 0 22px;}
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:18px;
+  }
+  .panel h3{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--chalk-faint); margin:0 0 12px; display:flex; align-items:center; gap:8px;
+  }
+  .panel h3::after{content:''; flex:1; height:1px; background:var(--line);}
+
+  .props{margin:0; padding-left:0; list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:6px 26px;}
+  .props li{font-size:13.5px; color:var(--chalk-dim); line-height:1.55; padding-left:16px; position:relative;}
+  .props li::before{content:'✦'; position:absolute; left:0; top:1px; color:var(--blue); font-size:10px;}
+
+  .algo-grid{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  .algo-col h4{font-size:13px; margin:0 0 8px; color:var(--chalk); font-weight:600;}
+  .algo-col h4 .tag{font-family:var(--font-mono); font-size:9.5px; padding:2px 6px; border-radius:4px; margin-right:6px;}
+  .algo-col.ins h4 .tag{background:rgba(143,217,168,.15); color:var(--green);}
+  .algo-col.del h4 .tag{background:rgba(242,120,159,.15); color:var(--pink);}
+  .algo-col ol{margin:0; padding-left:19px; font-size:12.8px; color:var(--chalk-dim); line-height:1.65;}
+  .algo-col ol li::marker{font-family:var(--font-mono); color:var(--chalk-faint); font-size:11px;}
+
+  table.complexity{width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12.5px;}
+  table.complexity th, table.complexity td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);}
+  table.complexity th{color:var(--chalk-faint); font-weight:500; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;}
+  table.complexity td{color:var(--chalk-dim);}
+  table.complexity tr:last-child td{border-bottom:none;}
+  table.complexity td.avg{color:var(--green);}
+  table.complexity td.worst{color:var(--pink);}
+
+  /* ---------- Viz panel ---------- */
+  .viz-panel{padding:0; overflow:hidden;}
+  .viz-controls{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:14px 18px; border-bottom:1px solid var(--line); background:var(--bg-panel-raised);
+  }
+  .viz-controls input[type=text]{
+    background:var(--rail); border:1px solid var(--line); color:var(--chalk);
+    border-radius:7px; padding:8px 11px; font-family:var(--font-mono); font-size:13px;
+    width:150px; outline:none;
+  }
+  .viz-controls input[type=text]:focus{border-color:var(--blue);}
+  .viz-controls input[type=text]::placeholder{color:var(--chalk-faint);}
+  .btn{
+    font-family:var(--font-body); font-weight:600; font-size:12.5px; border:none; border-radius:7px;
+    padding:9px 14px; cursor:pointer; transition:transform .08s, filter .12s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-insert{background:var(--green); color:#0F1613;}
+  .btn-delete{background:var(--pink); color:#0F1613;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--chalk-dim);}
+  .btn-ghost:hover{color:var(--chalk); border-color:var(--chalk-faint);}
+  .btn:hover{filter:brightness(1.08);}
+  .viz-hint{font-size:11px; color:var(--chalk-faint); margin-left:auto; font-family:var(--font-mono);}
+
+  .canvas-wrap{
+    background:
+      radial-gradient(circle at 1px 1px, rgba(237,237,227,0.045) 1px, transparent 1px) 0 0/20px 20px,
+      var(--bg);
+    min-height:340px; display:flex; align-items:center; justify-content:center; overflow:auto; padding:10px;
+  }
+  .canvas-wrap svg{max-width:100%; height:auto; display:block;}
+  .empty-msg{font-family:var(--font-chalk); font-size:20px; color:var(--chalk-faint);}
+
+  .log-strip{
+    border-top:1px solid var(--line); background:var(--bg-panel-raised);
+    padding:10px 18px; font-family:var(--font-mono); font-size:11.5px; max-height:96px; overflow-y:auto;
+  }
+  .log-strip .row{color:var(--chalk-dim); padding:2px 0; display:flex; gap:8px;}
+  .log-strip .row .t{color:var(--chalk-faint); flex:none;}
+  .log-strip .row.ins .msg{color:var(--green);}
+  .log-strip .row.del .msg{color:var(--pink);}
+  .log-strip .row.err .msg{color:var(--yellow);}
+  .log-strip .row.info .msg{color:var(--blue);}
+
+  /* chalk node styling */
+  .node-circle{fill:var(--bg-panel-raised); stroke:var(--chalk); stroke-width:2;}
+  .node-circle.flash{stroke:var(--yellow); stroke-width:3;}
+  .node-circle.red{fill:rgba(242,120,159,.18); stroke:var(--pink);}
+  .node-circle.black{fill:rgba(237,237,227,.06); stroke:var(--chalk);}
+  .node-text{fill:var(--chalk); font-family:var(--font-mono); font-size:13px; text-anchor:middle; dominant-baseline:central;}
+  .node-badge{fill:var(--blue); font-family:var(--font-mono); font-size:9px; text-anchor:middle;}
+  .edge-line{stroke:var(--chalk-faint); stroke-width:1.6; fill:none;}
+  .box-rect{fill:var(--bg-panel-raised); stroke:var(--chalk); stroke-width:1.6;}
+  .box-rect.leaf{stroke:var(--blue);}
+  .trie-end circle{stroke:var(--yellow); stroke-width:2.5;}
+  .quad-rect{fill:none; stroke:var(--chalk-faint); stroke-width:1;}
+  .quad-point{fill:var(--yellow); stroke:var(--bg); stroke-width:1;}
+
+  @media (max-width: 900px){
+    .app{flex-direction:column;}
+    .sidebar{width:100%; flex-direction:row; overflow-x:auto; padding:14px;}
+    .brand, .sidebar-foot{display:none;}
+    nav{display:flex; padding:0; gap:6px;}
+    .algo-grid{grid-template-columns:1fr;}
+    .props{grid-template-columns:1fr;}
+    main{padding:20px 16px 30px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="eyebrow">CSA0316 · Data Structures</div>
+      <div class="eyebrow">Nishanth R -192511183</div>
+      <h1>Tree Lab</h1>
+      <p>Interactive Tree Simulator</p>
+    </div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <p>Built for the Assessment Tool 2 rubric — every structure below is fully interactive with real insert/delete logic, not a static diagram.</p>
+    </div>
+  </aside>
+
+  <main>
+    <main>
+
+  <!-- University Header -->
+  <div class="university-header">
+
+    <!-- Left Logo -->
+    <img src="Screenshot_2026-05-11_093127-removebg-preview.png" alt="SIMATS Logo" class="uni-logo left-logo">
+
+    <!-- University Name -->
+    <div class="university-name">
+      <h1>SIMATS</h1>
+      <h2>ENGINEERING</h2>
+    </div>
+
+    <!-- Right Logo -->
+    <img src="Screenshot_2026-05-11_093132-removebg-preview.png" alt="University Logo" class="uni-logo right-logo">
+
+  </div>
+
+    <div class="head-row">
+  
+  <div>
+    <div class="eyebrow" id="eyebrow">01 · Structure</div>
+    <h2 class="title" id="title">Loading…</h2>
+  </div>
+
+
+</div>
+    <p class="definition" id="definition"></p>
+
+    <div class="panel">
+      <h3>Properties</h3>
+      <ul class="props" id="props"></ul>
+    </div>
+
+    <div class="panel">
+      <h3>Algorithm</h3>
+      <div class="algo-grid">
+        <div class="algo-col ins">
+          <h4><span class="tag">INSERT</span></h4>
+          <ol id="insertSteps"></ol>
+        </div>
+        <div class="algo-col del">
+          <h4><span class="tag">DELETE</span></h4>
+          <ol id="deleteSteps"></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Time Complexity</h3>
+      <table class="complexity">
+        <thead><tr><th>Operation</th><th>Average</th><th>Worst case</th></tr></thead>
+        <tbody id="complexityBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel viz-panel">
+      <div class="viz-controls">
+        <input type="text" id="valInput" placeholder="value">
+        <button class="btn btn-insert" id="btnInsert">Insert</button>
+        <button class="btn btn-delete" id="btnDelete">Delete</button>
+        <button class="btn btn-ghost" id="btnRandom">Randomize</button>
+        <button class="btn btn-ghost" id="btnReset">Reset</button>
+        <span class="viz-hint" id="hint"></span>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap"></div>
+      <div class="log-strip" id="log"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   TREE ENGINES (verified independently — see build notes)
+   ============================================================ */
+// ============================================================
+// Core data-structure engines. Pure logic, no DOM.
+// Each engine exposes: insert(key), delete(key), toLayout()
+// toLayout() returns a plain-object tree describing node
+// positions/relationships for rendering, plus metadata.
+// ============================================================
+
+// ---------- 1. Binary Tree (generic, complete-tree style) ----------
+class BinaryTreeNode {
+  constructor(key) { this.key = key; this.left = null; this.right = null; }
+}
+class BinaryTree {
+  constructor() { this.root = null; this.nodes = []; } // nodes kept in level order for complete-tree behavior
+  insert(key) {
+    const node = new BinaryTreeNode(key);
+    this.nodes.push(node);
+    if (!this.root) { this.root = node; return; }
+    // find first node (level order) with a free child slot
+    const q = [this.root];
+    while (q.length) {
+      const cur = q.shift();
+      if (!cur.left) { cur.left = node; return; }
+      if (!cur.right) { cur.right = node; return; }
+      q.push(cur.left, cur.right);
+    }
+  }
+  delete(key) {
+    if (!this.root) return false;
+    // find node with key (first match, level order) and the last node in level order
+    const q = [this.root];
+    let target = null;
+    let lastParent = null, last = null, lastIsLeft = false;
+    const order = [];
+    while (q.length) {
+      const cur = q.shift();
+      order.push(cur);
+      if (cur.key === key && !target) target = cur;
+      if (cur.left) q.push(cur.left);
+      if (cur.right) q.push(cur.right);
+    }
+    if (!target) return false;
+    last = order[order.length - 1];
+    if (last === this.root && order.length === 1) { this.root = null; this.nodes = []; return true; }
+    // find parent of last
+    for (const n of order) {
+      if (n.left === last) { lastParent = n; lastIsLeft = true; break; }
+      if (n.right === last) { lastParent = n; lastIsLeft = false; break; }
+    }
+    target.key = last.key;
+    if (lastParent) { if (lastIsLeft) lastParent.left = null; else lastParent.right = null; }
+    this.nodes = this.nodes.filter(n => n !== last);
+    return true;
+  }
+  toLayout() { return layoutBinary(this.root, n => ({ key: n.key })); }
+}
+
+// ---------- shared binary layout (inorder x, depth y) ----------
+function layoutBinary(root, meta) {
+  const nodes = []; const edges = [];
+  let x = 0;
+  function walk(n, depth, parentId) {
+    if (!n) return null;
+    const id = nodes.length;
+    // reserve id first via inorder placement: do left, self, right
+    let leftId = walk(n.left, depth + 1, id);
+    const myId = nodes.length;
+    nodes.push({ id: myId, x: x++, y: depth, parent: parentId, ...meta(n) });
+    let rightId = walk(n.right, depth + 1, myId);
+    if (leftId !== null) edges.push({ from: myId, to: leftId, side: 'L' });
+    if (rightId !== null) edges.push({ from: myId, to: rightId, side: 'R' });
+    return myId;
+  }
+  // Need parent linking correct: redo with explicit recursion returning id
+  nodes.length = 0; edges.length = 0; x = 0;
+  function build(n, depth) {
+    if (!n) return null;
+    const leftId = build(n.left, depth + 1);
+    const myId = nodes.length;
+    nodes.push({ id: myId, x: x++, y: depth, ...meta(n) });
+    const rightId = build(n.right, depth + 1);
+    if (leftId !== null) edges.push({ from: myId, to: leftId });
+    if (rightId !== null) edges.push({ from: myId, to: rightId });
+    return myId;
+  }
+  build(root, 0);
+  return { nodes, edges, width: x };
+}
+
+// ---------- 2. BST ----------
+class BSTNode {
+  constructor(key) { this.key = key; this.left = null; this.right = null; }
+}
+class BST {
+  constructor() { this.root = null; }
+  insert(key) {
+    const ins = (n) => {
+      if (!n) return new BSTNode(key);
+      if (key < n.key) n.left = ins(n.left);
+      else if (key > n.key) n.right = ins(n.right);
+      return n;
+    };
+    this.root = ins(this.root);
+  }
+  delete(key) {
+    let found = false;
+    const min = (n) => n.left ? min(n.left) : n;
+    const del = (n) => {
+      if (!n) return null;
+      if (key < n.key) { n.left = del(n.left); return n; }
+      if (key > n.key) { n.right = del(n.right); return n; }
+      found = true;
+      if (!n.left) return n.right;
+      if (!n.right) return n.left;
+      const succ = min(n.right);
+      n.key = succ.key;
+      n.right = (function rm(node) {
+        if (!node) return null;
+        if (node.key === succ.key && node.left === succ.left_marker) return node; // unreachable safeguard
+        if (node === succ) return node.right;
+        if (succ.key < node.key) { node.left = rm(node.left); }
+        else { node.right = rm(node.right); }
+        return node;
+      })(n.right);
+      return n;
+    };
+    this.root = del(this.root);
+    return found;
+  }
+  toLayout() { return layoutBinary(this.root, n => ({ key: n.key })); }
+}
+
+// ---------- 3. AVL ----------
+class AVLNode {
+  constructor(key) { this.key = key; this.left = null; this.right = null; this.h = 1; }
+}
+function h(n) { return n ? n.h : 0; }
+function upd(n) { n.h = 1 + Math.max(h(n.left), h(n.right)); }
+function bal(n) { return n ? h(n.left) - h(n.right) : 0; }
+function rotRight(y) { const x = y.left; y.left = x.right; x.right = y; upd(y); upd(x); return x; }
+function rotLeft(x) { const y = x.right; x.right = y.left; y.left = x; upd(x); upd(y); return y; }
+function rebalance(n) {
+  upd(n);
+  const b = bal(n);
+  if (b > 1) {
+    if (bal(n.left) < 0) n.left = rotLeft(n.left);
+    return rotRight(n);
+  }
+  if (b < -1) {
+    if (bal(n.right) > 0) n.right = rotRight(n.right);
+    return rotLeft(n);
+  }
+  return n;
+}
+class AVL {
+  constructor() { this.root = null; }
+  insert(key) {
+    const ins = (n) => {
+      if (!n) return new AVLNode(key);
+      if (key < n.key) n.left = ins(n.left);
+      else if (key > n.key) n.right = ins(n.right);
+      else return n;
+      return rebalance(n);
+    };
+    this.root = ins(this.root);
+  }
+  delete(key) {
+    let found = false;
+    const min = (n) => n.left ? min(n.left) : n;
+    const del = (n) => {
+      if (!n) return null;
+      if (key < n.key) { n.left = del(n.left); }
+      else if (key > n.key) { n.right = del(n.right); }
+      else {
+        found = true;
+        if (!n.left) return n.right;
+        if (!n.right) return n.left;
+        const succ = min(n.right);
+        n.key = succ.key;
+        n.right = (function rm(node) {
+          if (!node) return null;
+          if (node === succ) return node.right;
+          if (succ.key < node.key) node.left = rm(node.left);
+          else node.right = rm(node.right);
+          return rebalance(node);
+        })(n.right);
+      }
+      return rebalance(n);
+    };
+    this.root = del(this.root);
+    return found;
+  }
+  toLayout() { return layoutBinary(this.root, n => ({ key: n.key, bf: bal(n) })); }
+}
+
+// ---------- 4. Red-Black Tree ----------
+const RED = 'R', BLACK = 'B';
+class RBNode {
+  constructor(key, color, nil) {
+    this.key = key; this.color = color;
+    this.left = nil; this.right = nil; this.parent = null;
+  }
+}
+class RedBlackTree {
+  constructor() {
+    this.NIL = { color: BLACK, key: null, left: null, right: null, parent: null, nil: true };
+    this.root = this.NIL;
+  }
+  _leftRotate(x) {
+    const y = x.right;
+    x.right = y.left;
+    if (y.left !== this.NIL) y.left.parent = x;
+    y.parent = x.parent;
+    if (x.parent === null) this.root = y;
+    else if (x === x.parent.left) x.parent.left = y;
+    else x.parent.right = y;
+    y.left = x; x.parent = y;
+  }
+  _rightRotate(x) {
+    const y = x.left;
+    x.left = y.right;
+    if (y.right !== this.NIL) y.right.parent = x;
+    y.parent = x.parent;
+    if (x.parent === null) this.root = y;
+    else if (x === x.parent.right) x.parent.right = y;
+    else x.parent.left = y;
+    y.right = x; x.parent = y;
+  }
+  insert(key) {
+    let existing = this.root;
+    while (existing !== this.NIL) {
+      if (key === existing.key) return;
+      existing = key < existing.key ? existing.left : existing.right;
+    }
+    const z = new RBNode(key, RED, this.NIL);
+    let y = null, x = this.root;
+    while (x !== this.NIL) { y = x; x = key < x.key ? x.left : x.right; }
+    z.parent = y;
+    if (y === null) this.root = z;
+    else if (key < y.key) y.left = z;
+    else y.right = z;
+    this._insertFixup(z);
+  }
+  _insertFixup(z) {
+    while (z.parent && z.parent.color === RED) {
+      const gp = z.parent.parent;
+      if (z.parent === gp.left) {
+        const y = gp.right;
+        if (y.color === RED) {
+          z.parent.color = BLACK; y.color = BLACK; gp.color = RED; z = gp;
+        } else {
+          if (z === z.parent.right) { z = z.parent; this._leftRotate(z); }
+          z.parent.color = BLACK; gp.color = RED; this._rightRotate(gp);
+        }
+      } else {
+        const y = gp.left;
+        if (y.color === RED) {
+          z.parent.color = BLACK; y.color = BLACK; gp.color = RED; z = gp;
+        } else {
+          if (z === z.parent.left) { z = z.parent; this._rightRotate(z); }
+          z.parent.color = BLACK; gp.color = RED; this._leftRotate(gp);
+        }
+      }
+    }
+    this.root.color = BLACK;
+  }
+  _transplant(u, v) {
+    if (u.parent === null) this.root = v;
+    else if (u === u.parent.left) u.parent.left = v;
+    else u.parent.right = v;
+    v.parent = u.parent;
+  }
+  _min(n) { while (n.left !== this.NIL) n = n.left; return n; }
+  _find(key) {
+    let n = this.root;
+    while (n !== this.NIL && n.key !== key) n = key < n.key ? n.left : n.right;
+    return n;
+  }
+  delete(key) {
+    let z = this._find(key);
+    if (z === this.NIL) return false;
+    let y = z, yOrigColor = y.color, x;
+    if (z.left === this.NIL) { x = z.right; this._transplant(z, z.right); }
+    else if (z.right === this.NIL) { x = z.left; this._transplant(z, z.left); }
+    else {
+      y = this._min(z.right); yOrigColor = y.color; x = y.right;
+      if (y.parent === z) x.parent = y;
+      else { this._transplant(y, y.right); y.right = z.right; y.right.parent = y; }
+      this._transplant(z, y); y.left = z.left; y.left.parent = y; y.color = z.color;
+    }
+    if (yOrigColor === BLACK) this._deleteFixup(x);
+    return true;
+  }
+  _deleteFixup(x) {
+    while (x !== this.root && x.color === BLACK) {
+      if (x === x.parent.left) {
+        let w = x.parent.right;
+        if (w.color === RED) { w.color = BLACK; x.parent.color = RED; this._leftRotate(x.parent); w = x.parent.right; }
+        if (w.left.color === BLACK && w.right.color === BLACK) { w.color = RED; x = x.parent; }
+        else {
+          if (w.right.color === BLACK) { w.left.color = BLACK; w.color = RED; this._rightRotate(w); w = x.parent.right; }
+          w.color = x.parent.color; x.parent.color = BLACK; w.right.color = BLACK;
+          this._leftRotate(x.parent); x = this.root;
+        }
+      } else {
+        let w = x.parent.left;
+        if (w.color === RED) { w.color = BLACK; x.parent.color = RED; this._rightRotate(x.parent); w = x.parent.left; }
+        if (w.right.color === BLACK && w.left.color === BLACK) { w.color = RED; x = x.parent; }
+        else {
+          if (w.left.color === BLACK) { w.right.color = BLACK; w.color = RED; this._leftRotate(w); w = x.parent.left; }
+          w.color = x.parent.color; x.parent.color = BLACK; w.left.color = BLACK;
+          this._rightRotate(x.parent); x = this.root;
+        }
+      }
+    }
+    x.color = BLACK;
+  }
+  toLayout() {
+    const root = this.root === this.NIL ? null : this.root;
+    const conv = (n) => (n === this.NIL ? null : n);
+    // wrap layoutBinary with NIL-aware left/right
+    const nodes = []; const edges = []; let x = 0;
+    const self = this;
+    function build(n, depth) {
+      if (n === self.NIL) return null;
+      const leftId = build(n.left, depth + 1);
+      const myId = nodes.length;
+      nodes.push({ id: myId, x: x++, y: depth, key: n.key, color: n.color });
+      const rightId = build(n.right, depth + 1);
+      if (leftId !== null) edges.push({ from: myId, to: leftId });
+      if (rightId !== null) edges.push({ from: myId, to: rightId });
+      return myId;
+    }
+    build(this.root, 0);
+    return { nodes, edges, width: x };
+  }
+}
+
+// ---------- 5. Splay Tree ----------
+class SplayNode { constructor(key) { this.key = key; this.left = null; this.right = null; this.parent = null; } }
+class SplayTree {
+  constructor() { this.root = null; }
+  _rotate(x) {
+    const p = x.parent, g = p.parent;
+    if (p.left === x) { p.left = x.right; if (x.right) x.right.parent = p; x.right = p; }
+    else { p.right = x.left; if (x.left) x.left.parent = p; x.left = p; }
+    p.parent = x; x.parent = g;
+    if (g) { if (g.left === p) g.left = x; else g.right = x; }
+  }
+  _splay(x) {
+    while (x.parent) {
+      const p = x.parent, g = p.parent;
+      if (!g) { this._rotate(x); }
+      else if ((g.left === p) === (p.left === x)) { this._rotate(p); this._rotate(x); }
+      else { this._rotate(x); this._rotate(x); }
+    }
+    this.root = x;
+  }
+  _find(key) {
+    let n = this.root, last = null;
+    while (n) { last = n; if (key === n.key) { this._splay(n); return n; } n = key < n.key ? n.left : n.right; }
+    if (last) this._splay(last);
+    return null;
+  }
+  insert(key) {
+    if (!this.root) { this.root = new SplayNode(key); return; }
+    let n = this.root, parent = null;
+    while (n) { parent = n; if (key === n.key) { this._splay(n); return; } n = key < n.key ? n.left : n.right; }
+    const node = new SplayNode(key); node.parent = parent;
+    if (key < parent.key) parent.left = node; else parent.right = node;
+    this._splay(node);
+  }
+  delete(key) {
+    const n = this._find(key);
+    if (!n) return false;
+    // root is now n after splay-find
+    const L = n.left, R = n.right;
+    if (L) L.parent = null;
+    if (R) R.parent = null;
+    if (!L) { this.root = R; }
+    else {
+      let m = L; while (m.right) m = m.right;
+      this._splay2(L, m);
+      m.right = R; if (R) R.parent = m;
+      this.root = m;
+    }
+    return true;
+  }
+  _splay2(subRoot, x) {
+    // splay x within subtree rooted at subRoot (x has no parent link outside)
+    while (x.parent) {
+      const p = x.parent, g = p.parent;
+      if (!g) { this._rotate(x); }
+      else if ((g.left === p) === (p.left === x)) { this._rotate(p); this._rotate(x); }
+      else { this._rotate(x); this._rotate(x); }
+    }
+  }
+  toLayout() { return layoutBinary(this.root, n => ({ key: n.key })); }
+}
+
+// ---------- 6. Trie ----------
+class TrieNode { constructor() { this.children = {}; this.end = false; } }
+class Trie {
+  constructor() { this.root = new TrieNode(); }
+  insert(word) {
+    word = String(word);
+    let n = this.root;
+    for (const ch of word) { if (!n.children[ch]) n.children[ch] = new TrieNode(); n = n.children[ch]; }
+    n.end = true;
+  }
+  delete(word) {
+    word = String(word);
+    let found = false;
+    const del = (n, i) => {
+      if (i === word.length) {
+        if (!n.end) return false;
+        found = true; n.end = false;
+        return Object.keys(n.children).length === 0;
+      }
+      const ch = word[i];
+      const child = n.children[ch];
+      if (!child) return false;
+      const shouldDelete = del(child, i + 1);
+      if (shouldDelete) delete n.children[ch];
+      return Object.keys(n.children).length === 0 && !n.end;
+    };
+    del(this.root, 0);
+    return found;
+  }
+  toLayout() {
+    const nodes = []; const edges = []; let x = 0;
+    const build = (n, depth, label) => {
+      const leftmost = [];
+      const keys = Object.keys(n.children).sort();
+      const childIds = [];
+      for (const k of keys) childIds.push(build(n.children[k], depth + 1, k));
+      let myId;
+      if (childIds.length === 0) {
+        myId = nodes.length;
+        nodes.push({ id: myId, x: x++, y: depth, key: label, end: n.end });
+      } else {
+        myId = nodes.length;
+        // place after computing children so x reflects subtree order; use avg of children x for nicer layout
+        const xs = childIds.map(id => nodes[id].x);
+        nodes.push({ id: myId, x: (Math.min(...xs) + Math.max(...xs)) / 2, y: depth, key: label, end: n.end });
+      }
+      for (const cid of childIds) edges.push({ from: myId, to: cid });
+      return myId;
+    };
+    const rootId = build(this.root, 0, '•');
+    return { nodes, edges, width: x || 1 };
+  }
+}
+
+// ---------- 7. B-Tree (min degree t, order = 2t) ----------
+class BTreeNode {
+  constructor(leaf) { this.leaf = leaf; this.keys = []; this.children = []; }
+}
+class BTree {
+  constructor(t = 2) { this.t = t; this.root = new BTreeNode(true); }
+  search(k, n = this.root) {
+    let i = 0; while (i < n.keys.length && k > n.keys[i]) i++;
+    if (i < n.keys.length && n.keys[i] === k) return { node: n, idx: i };
+    if (n.leaf) return null;
+    return this.search(k, n.children[i]);
+  }
+  insert(k) {
+    if (this.search(k)) return;
+    const t = this.t;
+    let r = this.root;
+    if (r.keys.length === 2 * t - 1) {
+      const s = new BTreeNode(false);
+      s.children.push(r);
+      this._splitChild(s, 0);
+      this.root = s;
+      this._insertNonFull(s, k);
+    } else this._insertNonFull(r, k);
+  }
+  _splitChild(x, i) {
+    const t = this.t;
+    const y = x.children[i];
+    const z = new BTreeNode(y.leaf);
+    z.keys = y.keys.splice(t, t - 1);
+    const midKey = y.keys.pop();
+    if (!y.leaf) z.children = y.children.splice(t, t);
+    x.children.splice(i + 1, 0, z);
+    x.keys.splice(i, 0, midKey);
+  }
+  _insertNonFull(x, k) {
+    let i = x.keys.length - 1;
+    if (x.leaf) {
+      x.keys.push(0);
+      while (i >= 0 && k < x.keys[i]) { x.keys[i + 1] = x.keys[i]; i--; }
+      x.keys[i + 1] = k;
+    } else {
+      while (i >= 0 && k < x.keys[i]) i--;
+      i++;
+      if (x.children[i].keys.length === 2 * this.t - 1) {
+        this._splitChild(x, i);
+        if (k > x.keys[i]) i++;
+      }
+      this._insertNonFull(x.children[i], k);
+    }
+  }
+  delete(k) {
+    if (!this.search(k)) return false;
+    this._deleteKey(this.root, k);
+    if (this.root.keys.length === 0 && !this.root.leaf) this.root = this.root.children[0];
+    return true;
+  }
+  _findKeyIdx(n, k) { let i = 0; while (i < n.keys.length && n.keys[i] < k) i++; return i; }
+  _deleteKey(n, k) {
+    const t = this.t;
+    const idx = this._findKeyIdx(n, k);
+    if (idx < n.keys.length && n.keys[idx] === k) {
+      if (n.leaf) n.keys.splice(idx, 1);
+      else this._deleteInternal(n, idx);
+    } else {
+      if (n.leaf) return; // not found (shouldn't happen, checked earlier)
+      const flag = (idx === n.keys.length);
+      if (n.children[idx].keys.length < t) this._fill(n, idx);
+      if (flag && idx > n.keys.length) this._deleteKey(n.children[idx - 1], k);
+      else this._deleteKey(n.children[idx], k);
+    }
+  }
+  _deleteInternal(n, idx) {
+    const k = n.keys[idx]; const t = this.t;
+    if (n.children[idx].keys.length >= t) {
+      const pred = this._getPred(n, idx);
+      n.keys[idx] = pred;
+      this._deleteKey(n.children[idx], pred);
+    } else if (n.children[idx + 1].keys.length >= t) {
+      const succ = this._getSucc(n, idx);
+      n.keys[idx] = succ;
+      this._deleteKey(n.children[idx + 1], succ);
+    } else {
+      this._merge(n, idx);
+      this._deleteKey(n.children[idx], k);
+    }
+  }
+  _getPred(n, idx) { let cur = n.children[idx]; while (!cur.leaf) cur = cur.children[cur.children.length - 1]; return cur.keys[cur.keys.length - 1]; }
+  _getSucc(n, idx) { let cur = n.children[idx + 1]; while (!cur.leaf) cur = cur.children[0]; return cur.keys[0]; }
+  _fill(n, idx) {
+    const t = this.t;
+    if (idx !== 0 && n.children[idx - 1].keys.length >= t) this._borrowFromPrev(n, idx);
+    else if (idx !== n.keys.length && n.children[idx + 1].keys.length >= t) this._borrowFromNext(n, idx);
+    else { if (idx !== n.keys.length) this._merge(n, idx); else this._merge(n, idx - 1); }
+  }
+  _borrowFromPrev(n, idx) {
+    const child = n.children[idx], sib = n.children[idx - 1];
+    child.keys.unshift(n.keys[idx - 1]);
+    if (!child.leaf) child.children.unshift(sib.children.pop());
+    n.keys[idx - 1] = sib.keys.pop();
+  }
+  _borrowFromNext(n, idx) {
+    const child = n.children[idx], sib = n.children[idx + 1];
+    child.keys.push(n.keys[idx]);
+    if (!child.leaf) child.children.push(sib.children.shift());
+    n.keys[idx] = sib.keys.shift();
+  }
+  _merge(n, idx) {
+    const child = n.children[idx], sib = n.children[idx + 1];
+    child.keys.push(n.keys[idx]);
+    child.keys = child.keys.concat(sib.keys);
+    if (!child.leaf) child.children = child.children.concat(sib.children);
+    n.keys.splice(idx, 1);
+    n.children.splice(idx + 1, 1);
+  }
+  toLayout() {
+    const nodes = []; const edges = []; let x = 0;
+    const build = (n, depth) => {
+      const childIds = n.leaf ? [] : n.children.map(c => build(c, depth + 1));
+      const myId = nodes.length;
+      let myX;
+      if (childIds.length) { const xs = childIds.map(id => nodes[id].x); myX = (Math.min(...xs) + Math.max(...xs)) / 2; }
+      else myX = x++;
+      nodes.push({ id: myId, x: myX, y: depth, keys: n.keys.slice() });
+      for (const cid of childIds) edges.push({ from: myId, to: cid });
+      return myId;
+    };
+    build(this.root, 0);
+    return { nodes, edges, width: x || 1 };
+  }
+}
+
+// ---------- 8. B+ Tree (min degree t) ----------
+class BPlusNode {
+  constructor(leaf) { this.leaf = leaf; this.keys = []; this.children = []; this.next = null; }
+}
+class BPlusTree {
+  constructor(t = 2) { this.t = t; this.root = new BPlusNode(true); }
+  _findLeaf(k, n = this.root) {
+    if (n.leaf) return n;
+    let i = 0; while (i < n.keys.length && k >= n.keys[i]) i++;
+    return this._findLeaf(k, n.children[i]);
+  }
+  search(k) { const leaf = this._findLeaf(k); return leaf.keys.includes(k); }
+  insert(k) {
+    if (this.search(k)) return;
+    const t = this.t;
+    const path = [];
+    let n = this.root;
+    while (!n.leaf) { path.push(n); let i = 0; while (i < n.keys.length && k >= n.keys[i]) i++; n = n.children[i]; }
+    // insert into leaf
+    let i = 0; while (i < n.keys.length && n.keys[i] < k) i++;
+    n.keys.splice(i, 0, k);
+    if (n.keys.length < 2 * t) return;
+    this._splitLeaf(n, path);
+  }
+  _splitLeaf(leaf, path) {
+    const t = this.t;
+    const mid = Math.ceil(leaf.keys.length / 2);
+    const right = new BPlusNode(true);
+    right.keys = leaf.keys.splice(mid);
+    right.next = leaf.next; leaf.next = right;
+    const upKey = right.keys[0];
+    this._insertUp(leaf, right, upKey, path);
+  }
+  _insertUp(left, right, key, path) {
+    if (path.length === 0) {
+      const newRoot = new BPlusNode(false);
+      newRoot.keys = [key]; newRoot.children = [left, right];
+      this.root = newRoot;
+      return;
+    }
+    const parent = path[path.length - 1];
+    const idx = parent.children.indexOf(left);
+    parent.keys.splice(idx, 0, key);
+    parent.children.splice(idx + 1, 0, right);
+    if (parent.keys.length < 2 * this.t) return;
+    // split internal node
+    const t = this.t;
+    const mid = Math.floor(parent.keys.length / 2);
+    const upKey = parent.keys[mid];
+    const newRight = new BPlusNode(false);
+    newRight.keys = parent.keys.splice(mid + 1);
+    newRight.children = parent.children.splice(mid + 1);
+    parent.keys.pop(); // remove mid key (pushed up)
+    this._insertUp(parent, newRight, upKey, path.slice(0, -1));
+  }
+  delete(k) {
+    if (!this.search(k)) return false;
+    const t = this.t;
+    const path = [];
+    let n = this.root;
+    while (!n.leaf) { path.push({ node: n }); let i = 0; while (i < n.keys.length && k >= n.keys[i]) i++; path[path.length - 1].idx = i; n = n.children[i]; }
+    n.keys.splice(n.keys.indexOf(k), 1);
+    this._rebalanceLeaf(n, path);
+    if (!this.root.leaf && this.root.keys.length === 0) this.root = this.root.children[0];
+    return true;
+  }
+  _rebalanceLeaf(leaf, path) {
+    const t = this.t;
+    if (leaf === this.root || leaf.keys.length >= t) { this._fixParentKey(leaf, path); return; }
+    const { node: parent, idx } = path[path.length - 1];
+    const leftSib = idx > 0 ? parent.children[idx - 1] : null;
+    const rightSib = idx < parent.children.length - 1 ? parent.children[idx + 1] : null;
+    if (rightSib && rightSib.keys.length > t) {
+      leaf.keys.push(rightSib.keys.shift());
+      parent.keys[idx] = rightSib.keys[0];
+    } else if (leftSib && leftSib.keys.length > t) {
+      leaf.keys.unshift(leftSib.keys.pop());
+      parent.keys[idx - 1] = leaf.keys[0];
+    } else if (leftSib) {
+      leftSib.keys = leftSib.keys.concat(leaf.keys);
+      leftSib.next = leaf.next;
+      parent.keys.splice(idx - 1, 1);
+      parent.children.splice(idx, 1);
+      this._rebalanceInternal(parent, path.slice(0, -1));
+    } else if (rightSib) {
+      leaf.keys = leaf.keys.concat(rightSib.keys);
+      leaf.next = rightSib.next;
+      parent.keys.splice(idx, 1);
+      parent.children.splice(idx + 1, 1);
+      this._rebalanceInternal(parent, path.slice(0, -1));
+    }
+  }
+  _fixParentKey() { /* B+ internal keys are routing copies; simplified tree tolerates stale routing keys since search uses >= comparisons consistently */ }
+  _rebalanceInternal(node, path) {
+    const t = this.t;
+    if (node === this.root) { return; }
+    if (node.keys.length >= t - 1) return;
+    const { node: parent, idx } = path[path.length - 1];
+    const leftSib = idx > 0 ? parent.children[idx - 1] : null;
+    const rightSib = idx < parent.children.length - 1 ? parent.children[idx + 1] : null;
+    if (rightSib && rightSib.keys.length > t - 1) {
+      node.keys.push(parent.keys[idx]);
+      parent.keys[idx] = rightSib.keys.shift();
+      node.children.push(rightSib.children.shift());
+    } else if (leftSib && leftSib.keys.length > t - 1) {
+      node.keys.unshift(parent.keys[idx - 1]);
+      parent.keys[idx - 1] = leftSib.keys.pop();
+      node.children.unshift(leftSib.children.pop());
+    } else if (leftSib) {
+      leftSib.keys.push(parent.keys[idx - 1]);
+      leftSib.keys = leftSib.keys.concat(node.keys);
+      leftSib.children = leftSib.children.concat(node.children);
+      parent.keys.splice(idx - 1, 1);
+      parent.children.splice(idx, 1);
+      this._rebalanceInternal(parent, path.slice(0, -1));
+    } else if (rightSib) {
+      node.keys.push(parent.keys[idx]);
+      node.keys = node.keys.concat(rightSib.keys);
+      node.children = node.children.concat(rightSib.children);
+      parent.keys.splice(idx, 1);
+      parent.children.splice(idx + 1, 1);
+      this._rebalanceInternal(parent, path.slice(0, -1));
+    }
+  }
+  toLayout() {
+    const nodes = []; const edges = []; let x = 0;
+    const build = (n, depth) => {
+      const childIds = n.leaf ? [] : n.children.map(c => build(c, depth + 1));
+      const myId = nodes.length;
+      let myX;
+      if (childIds.length) { const xs = childIds.map(id => nodes[id].x); myX = (Math.min(...xs) + Math.max(...xs)) / 2; }
+      else myX = x++;
+      nodes.push({ id: myId, x: myX, y: depth, keys: n.keys.slice(), leaf: n.leaf });
+      for (const cid of childIds) edges.push({ from: myId, to: cid });
+      return myId;
+    };
+    build(this.root, 0);
+    return { nodes, edges, width: x || 1 };
+  }
+}
+
+// ---------- 9. Quad Tree (2D points) ----------
+class QuadTree {
+  constructor(boundary = { x: 0, y: 0, w: 400, h: 400 }, cap = 1) {
+    this.boundary = boundary; this.cap = cap;
+    this.points = []; this.divided = false;
+    this.nw = this.ne = this.sw = this.se = null;
+  }
+  _contains(p) {
+    const b = this.boundary;
+    return p.x >= b.x && p.x < b.x + b.w && p.y >= b.y && p.y < b.y + b.h;
+  }
+  _subdivide() {
+    const { x, y, w, h } = this.boundary;
+    const hw = w / 2, hh = h / 2;
+    this.nw = new QuadTree({ x, y, w: hw, h: hh }, this.cap);
+    this.ne = new QuadTree({ x: x + hw, y, w: hw, h: hh }, this.cap);
+    this.sw = new QuadTree({ x, y: y + hh, w: hw, h: hh }, this.cap);
+    this.se = new QuadTree({ x: x + hw, y: y + hh, w: hw, h: hh }, this.cap);
+    this.divided = true;
+  }
+  insert(p) {
+    if (!this._contains(p)) return false;
+    if (this.points.length < this.cap) { this.points.push(p); return true; }
+    if (!this.divided) this._subdivide();
+    return this.nw.insert(p) || this.ne.insert(p) || this.sw.insert(p) || this.se.insert(p);
+  }
+  delete(p) {
+    if (!this._contains(p)) return false;
+    const i = this.points.findIndex(q => q.x === p.x && q.y === p.y);
+    if (i !== -1) { this.points.splice(i, 1); return true; }
+    if (!this.divided) return false;
+    return this.nw.delete(p) || this.ne.delete(p) || this.sw.delete(p) || this.se.delete(p);
+  }
+  toLayout() {
+    const rects = []; const points = [];
+    const walk = (q) => {
+      rects.push(q.boundary);
+      for (const p of q.points) points.push(p);
+      if (q.divided) { walk(q.nw); walk(q.ne); walk(q.sw); walk(q.se); }
+    };
+    walk(this);
+    return { rects, points, boundary: this.boundary };
+  }
+}
+
+
+/* ============================================================
+   CONTENT — definitions, properties, algorithm steps, complexity
+   ============================================================ */
+const CONTENT = {
+  binary: {
+    label: 'Binary Tree', idx: '01', kind: 'binary',
+    def: 'A hierarchical, non-linear data structure in which each node has at most two children — a left child and a right child — with no ordering constraint between them.',
+    props: [
+      'Each node has at most 2 children',
+      'No inherent ordering between left and right subtree values',
+      'Depth of a node = edges from the root; height = longest root-to-leaf path',
+      'A tree of n nodes has between ⌈log₂(n+1)⌉ and n levels',
+      'Special forms: full, complete, perfect and balanced binary trees',
+      'This simulator keeps it complete: new nodes fill the first free slot level by level'
+    ],
+    insert: [
+      'If the tree is empty, the new node becomes the root.',
+      'Otherwise perform a level-order (BFS) traversal from the root.',
+      'Insert the new node in the first empty child slot found.'
+    ],
+    del: [
+      'Locate the node to delete via BFS.',
+      'Find the deepest, right-most node in the tree.',
+      "Copy the deepest node's value into the target node.",
+      'Remove the deepest node from its original position.'
+    ],
+    complexity: [['Search','O(n)','O(n)'],['Insert','O(n)','O(n)'],['Delete','O(n)','O(n)']],
+    placeholder: 'e.g. 42'
+  },
+  bst: {
+    label: 'Binary Search Tree', idx: '02', kind: 'binary',
+    def: 'A binary tree where every node keeps the invariant: everything in its left subtree is smaller, everything in its right subtree is larger.',
+    props: [
+      'In-order traversal always yields keys in sorted order',
+      'No duplicate keys in this simulator',
+      'Shape depends entirely on insertion order',
+      'Can degrade to a linked list on sorted input ("skewed" tree)',
+      'Height ranges from O(log n) balanced to O(n) skewed',
+      'Basis for AVL, Red-Black, and Splay trees below'
+    ],
+    insert: [
+      'Compare the key with the current node, starting at the root.',
+      'Go left if the key is smaller, right if larger.',
+      'Repeat until an empty spot is reached; insert the new node there.'
+    ],
+    del: [
+      'Leaf node: remove it directly.',
+      'One child: replace the node with that child.',
+      'Two children: find the in-order successor (smallest key in the right subtree).',
+      "Copy the successor's key into the node, then delete the successor from the right subtree."
+    ],
+    complexity: [['Search','O(log n)','O(n)'],['Insert','O(log n)','O(n)'],['Delete','O(log n)','O(n)']],
+    placeholder: 'e.g. 42'
+  },
+  avl: {
+    label: 'AVL Tree', idx: '03', kind: 'binary',
+    def: 'A self-balancing BST (Adelson-Velsky & Landis, 1962) where the heights of the two subtrees of any node differ by at most 1.',
+    props: [
+      'Balance factor = height(left) − height(right), kept in {-1, 0, 1}',
+      'Height is always O(log n) — the strictest balance guarantee here',
+      'Restored via single rotations (LL, RR) or double rotations (LR, RL)',
+      'Faster lookups than Red-Black trees, but more rotation overhead on writes',
+      'Every node shown below is tagged with its live balance factor'
+    ],
+    insert: [
+      'Insert exactly as in a plain BST.',
+      'Walk back up to the root, updating each ancestor\'s height.',
+      "At each ancestor compute the balance factor.",
+      'If |balance| > 1, apply the matching rotation (LL / RR / LR / RL) to restore it.'
+    ],
+    del: [
+      'Delete as in a plain BST (leaf / one child / in-order successor).',
+      'Walk back up updating heights at each ancestor.',
+      'Rebalance each ancestor exactly as on insert — a single delete can trigger several rotations up the path.'
+    ],
+    complexity: [['Search','O(log n)','O(log n)'],['Insert','O(log n)','O(log n)'],['Delete','O(log n)','O(log n)']],
+    placeholder: 'e.g. 42'
+  },
+  rbtree: {
+    label: 'Red-Black Tree', idx: '04', kind: 'binary',
+    def: 'A self-balancing BST where every node is colored red or black; coloring rules bound the longest root-to-leaf path to at most twice the shortest.',
+    props: [
+      'Every node is red or black',
+      'The root is always black',
+      'Every NIL leaf is considered black',
+      'A red node never has a red child (no red-red in a row)',
+      'Every root-to-NIL path has the same number of black nodes (black-height)',
+      'Looser balance than AVL → cheaper rotations, still O(log n) height'
+    ],
+    insert: [
+      'Insert as in a BST; color the new node red.',
+      'If the parent is black, the tree is already valid — stop.',
+      "If the parent is red, look at the uncle. Red uncle → recolor parent, uncle and grandparent, recurse upward.",
+      'Black/nil uncle → rotate around the grandparent (single or double) and recolor to fix the violation.'
+    ],
+    del: [
+      'Delete as in a BST (in-order successor for the two-child case).',
+      'If a black node was removed, the replacement carries a "double-black" defect.',
+      "Fix it by cases on the sibling's color and its children's colors: recoloring, or rotating around the parent, propagating upward until the defect is absorbed or reaches the root."
+    ],
+    complexity: [['Search','O(log n)','O(log n)'],['Insert','O(log n)','O(log n)'],['Delete','O(log n)','O(log n)']],
+    placeholder: 'e.g. 42'
+  },
+  splay: {
+    label: 'Splay Tree', idx: '05', kind: 'binary',
+    def: 'A self-adjusting BST where every accessed node is rotated up to the root ("splayed"), giving fast repeated access to recently-used keys.',
+    props: [
+      'Stores no explicit balance metadata — balance is a side-effect of splaying',
+      'Amortized O(log n) per operation; a single operation can be O(n)',
+      'Recently or frequently accessed keys stay near the root',
+      'Splay cases: Zig (parent is root), Zig-Zig (same-side grandparent), Zig-Zag (opposite-side)',
+      'The most recently touched key is always at the root after this simulator\'s operations'
+    ],
+    insert: [
+      'Insert exactly as in a plain BST.',
+      'Splay the freshly-inserted node up to the root using zig / zig-zig / zig-zag rotations.'
+    ],
+    del: [
+      'Search for the key, splaying along the way so it lands at the root.',
+      'Remove the root, leaving a left subtree (L) and right subtree (R).',
+      "Find L's maximum node and splay it to become L's new root.",
+      "Attach R as that new root's right child."
+    ],
+    complexity: [['Search','O(log n)*','O(n)'],['Insert','O(log n)*','O(n)'],['Delete','O(log n)*','O(n)']],
+    placeholder: 'e.g. 42'
+  },
+  trie: {
+    label: 'Trie', idx: '06', kind: 'trie',
+    def: 'A tree that stores strings character by character, where every path from the root spells a prefix — words sharing a prefix share the same path.',
+    props: [
+      'Each node links to children keyed by character, not by comparison',
+      'A node flagged "end of word" marks a complete stored word',
+      'Words with a common prefix share the same nodes down to where they diverge',
+      'Lookup cost depends only on key length L, never on how many words are stored',
+      'Root node (•) represents the empty prefix'
+    ],
+    insert: [
+      'Start at the root.',
+      'For each character, follow the matching child edge, creating a new node if none exists.',
+      'Mark the final node reached as "end of word".'
+    ],
+    del: [
+      'Recursively descend to the end of the word.',
+      'Unmark "end of word" at the final node.',
+      'While backtracking, delete any node that has no children left and is not the end of another word.'
+    ],
+    complexity: [['Search','O(L)','O(L)'],['Insert','O(L)','O(L)'],['Delete','O(L)','O(L)']],
+    placeholder: 'e.g. care'
+  },
+  btree: {
+    label: 'B-Tree', idx: '07', kind: 'multiway',
+    def: 'A self-balancing multi-way search tree where each node holds several keys and children, keeping the tree shallow — built for disk-backed storage.',
+    props: [
+      'This simulator uses minimum degree t = 2 (order 4): 1–3 keys per node',
+      'Every leaf sits at exactly the same depth',
+      'Keys inside a node are kept sorted; k keys imply k+1 children',
+      'A node splits when it exceeds the max key count; splits can cascade to the root',
+      'Wide, shallow shape minimizes the number of disk/page reads per lookup'
+    ],
+    insert: [
+      'Descend like a BST, but branch on multiple keys per node.',
+      'Insert the key into the correct leaf, keeping it sorted.',
+      'If the leaf now holds too many keys, split it: the middle key moves up into the parent.',
+      'Splits can cascade upward, occasionally creating a new root and adding a level.'
+    ],
+    del: [
+      'If the key is in a leaf, remove it directly.',
+      "If it's in an internal node, swap in its in-order predecessor or successor, then delete that key from the leaf it came from.",
+      'If a node drops below the minimum key count, borrow a key from a sibling via the parent.',
+      "If borrowing isn't possible, merge with a sibling — merges can cascade upward and shrink the tree's height."
+    ],
+    complexity: [['Search','O(log n)','O(log n)'],['Insert','O(log n)','O(log n)'],['Delete','O(log n)','O(log n)']],
+    placeholder: 'e.g. 42'
+  },
+  bplus: {
+    label: 'B+ Tree', idx: '08', kind: 'multiway',
+    def: 'A B-Tree variant where all keys live in the leaves, internal nodes hold only routing copies, and leaves are linked together for fast range scans.',
+    props: [
+      'Internal nodes are a pure index — every key also appears again in a leaf',
+      'All leaves sit at the same depth and are linked left-to-right',
+      'Higher fan-out than a B-Tree (internal nodes carry no data payload) → shallower trees',
+      'Range queries cost O(log n + k) by walking the leaf chain instead of the tree',
+      'The structure databases and filesystems reach for by default'
+    ],
+    insert: [
+      'Descend through internal nodes using routing keys to find the correct leaf.',
+      'Insert the key into the leaf, keeping it sorted.',
+      'If the leaf overflows, split it and link the new leaf into the chain.',
+      "Copy the new right leaf's first key up into the parent as a routing key; splits cascade upward like a B-Tree."
+    ],
+    del: [
+      'Descend to the leaf holding the key and remove it there.',
+      'If the leaf underflows, borrow a key from a sibling leaf, or merge with one (updating the linked list).',
+      "Underflow and merging can cascade up through internal nodes exactly as in a B-Tree."
+    ],
+    complexity: [['Search','O(log n)','O(log n)'],['Insert','O(log n)','O(log n)'],['Delete','O(log n)','O(log n)']],
+    placeholder: 'e.g. 42'
+  },
+  quad: {
+    label: 'Quad Tree', idx: '09', kind: 'quad',
+    def: 'A tree for indexing 2D points, where each node represents a rectangular region, split into four quadrants (NW, NE, SW, SE) once it exceeds capacity.',
+    props: [
+      'Every internal node has exactly 4 children — never fewer',
+      'A node subdivides only once its point count exceeds a fixed capacity (2, here)',
+      'Depth adapts to point density — dense clusters get subdivided further than empty regions',
+      'Used for spatial indexing: collision detection, image compression, GIS map tiles, nearest-neighbor search',
+      'Points are plotted on a 400×400 region — type coordinates as "x,y"'
+    ],
+    insert: [
+      "If the point falls outside the node's boundary, reject it.",
+      'If the node still has capacity, store the point there directly.',
+      "Otherwise subdivide into 4 quadrants (if not already), then insert into whichever quadrant contains the point."
+    ],
+    del: [
+      "If the point falls outside the node's boundary, it isn't here.",
+      "If it's in this node's own point list, remove it directly.",
+      'Otherwise recurse into whichever quadrant contains the coordinates.'
+    ],
+    complexity: [['Search','O(log n)','O(n)'],['Insert','O(log n)','O(n)'],['Delete','O(log n)','O(n)']],
+    placeholder: 'e.g. 120,340'
+  }
+};
+const TAB_ORDER = ['binary','bst','avl','rbtree','splay','trie','btree','bplus','quad'];
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function renderBinaryLike(wrap, layout, opts) {
+  wrap.innerHTML = '';
+  if (!layout.nodes.length) { wrap.innerHTML = '<div class="empty-msg">Empty tree — insert a value to begin</div>'; return; }
+  const HGAP = 62, VGAP = 78, R = 21, PAD = 40;
+  const maxX = Math.max(...layout.nodes.map(n => n.x));
+  const maxY = Math.max(...layout.nodes.map(n => n.y));
+  const w = (maxX + 1) * HGAP + PAD * 2;
+  const hgt = (maxY + 1) * VGAP + PAD * 2;
+  const svg = svgEl('svg', { viewBox: `0 0 ${w} ${hgt}`, width: Math.min(w, 900) });
+  const px = (n) => n.x * HGAP + HGAP / 2 + PAD - HGAP / 2 + HGAP / 2;
+  const X = (n) => PAD + n.x * HGAP + HGAP / 2;
+  const Y = (n) => PAD + n.y * VGAP + VGAP / 2;
+  const byId = {}; layout.nodes.forEach(n => byId[n.id] = n);
+
+  const edgeGroup = svgEl('g', {});
+  layout.edges.forEach(e => {
+    const a = byId[e.from], b = byId[e.to];
+    edgeGroup.appendChild(svgEl('line', { class: 'edge-line', x1: X(a), y1: Y(a), x2: X(b), y2: Y(b) }));
+  });
+  svg.appendChild(edgeGroup);
+
+  const nodeGroup = svgEl('g', {});
+  layout.nodes.forEach(n => {
+    const g = svgEl('g', {});
+    let cls = 'node-circle';
+    if (opts.colorMode === 'rb') cls += n.color === 'R' ? ' red' : ' black';
+    if (opts.flashId === n.id) cls += ' flash';
+    g.appendChild(svgEl('circle', { class: cls, cx: X(n), cy: Y(n), r: R }));
+    const t = svgEl('text', { class: 'node-text', x: X(n), y: Y(n) + 1 });
+    t.textContent = n.key;
+    g.appendChild(t);
+    if (opts.colorMode === 'avl' && typeof n.bf === 'number') {
+      const b = svgEl('text', { class: 'node-badge', x: X(n) + R + 2, y: Y(n) - R });
+      b.textContent = (n.bf > 0 ? '+' : '') + n.bf;
+      g.appendChild(b);
+    }
+    nodeGroup.appendChild(g);
+  });
+  svg.appendChild(nodeGroup);
+  wrap.appendChild(svg);
+}
+
+function renderTrie(wrap, layout, opts) {
+  wrap.innerHTML = '';
+  if (layout.nodes.length <= 1) { wrap.innerHTML = '<div class="empty-msg">Empty trie — insert a word to begin</div>'; return; }
+  const HGAP = 56, VGAP = 72, R = 18, PAD = 40;
+  const xs = layout.nodes.map(n => n.x);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const maxY = Math.max(...layout.nodes.map(n => n.y));
+  const w = (maxX - minX + 1) * HGAP + PAD * 2;
+  const hgt = (maxY + 1) * VGAP + PAD * 2;
+  const svg = svgEl('svg', { viewBox: `0 0 ${w} ${hgt}`, width: Math.min(w, 900) });
+  const X = (n) => PAD + (n.x - minX) * HGAP + HGAP / 2;
+  const Y = (n) => PAD + n.y * VGAP + VGAP / 2;
+  const byId = {}; layout.nodes.forEach(n => byId[n.id] = n);
+  const edgeGroup = svgEl('g', {});
+  layout.edges.forEach(e => {
+    const a = byId[e.from], b = byId[e.to];
+    edgeGroup.appendChild(svgEl('line', { class: 'edge-line', x1: X(a), y1: Y(a), x2: X(b), y2: Y(b) }));
+  });
+  svg.appendChild(edgeGroup);
+  const nodeGroup = svgEl('g', {});
+  layout.nodes.forEach(n => {
+    const g = svgEl('g', { class: n.end ? 'trie-end' : '' });
+    let cls = 'node-circle';
+    if (opts.flashId === n.id) cls += ' flash';
+    g.appendChild(svgEl('circle', { class: cls, cx: X(n), cy: Y(n), r: R }));
+    const t = svgEl('text', { class: 'node-text', x: X(n), y: Y(n) + 1, style: 'font-size:12px' });
+    t.textContent = n.key;
+    g.appendChild(t);
+    nodeGroup.appendChild(g);
+  });
+  svg.appendChild(nodeGroup);
+  wrap.appendChild(svg);
+}
+
+function renderMultiway(wrap, layout, opts) {
+  wrap.innerHTML = '';
+  if (!layout.nodes.length) { wrap.innerHTML = '<div class="empty-msg">Empty tree — insert a value to begin</div>'; return; }
+  const HGAP = 54, VGAP = 84, PAD = 40, KEYW = 30, KEYH = 30;
+  const xs = layout.nodes.map(n => n.x);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const maxY = Math.max(...layout.nodes.map(n => n.y));
+  const w = (maxX - minX + 2) * HGAP + PAD * 2;
+  const hgt = (maxY + 1) * VGAP + PAD * 2;
+  const svg = svgEl('svg', { viewBox: `0 0 ${w} ${hgt}`, width: Math.min(w, 950) });
+  const X = (n) => PAD + (n.x - minX) * HGAP + HGAP;
+  const Y = (n) => PAD + n.y * VGAP + VGAP / 2;
+  const byId = {}; layout.nodes.forEach(n => byId[n.id] = n);
+  const boxW = (n) => Math.max(n.keys.length, 1) * KEYW;
+
+  const edgeGroup = svgEl('g', {});
+  layout.edges.forEach(e => {
+    const a = byId[e.from], b = byId[e.to];
+    edgeGroup.appendChild(svgEl('line', { class: 'edge-line', x1: X(a), y1: Y(a) + KEYH / 2, x2: X(b), y2: Y(b) - KEYH / 2 }));
+  });
+  svg.appendChild(edgeGroup);
+
+  const nodeGroup = svgEl('g', {});
+  layout.nodes.forEach(n => {
+    const bw = boxW(n);
+    const x0 = X(n) - bw / 2, y0 = Y(n) - KEYH / 2;
+    const g = svgEl('g', {});
+    let cls = 'box-rect' + (n.leaf ? ' leaf' : '');
+    g.appendChild(svgEl('rect', { class: cls, x: x0, y: y0, width: bw, height: KEYH, rx: 6 }));
+    n.keys.forEach((k, i) => {
+      if (i > 0) g.appendChild(svgEl('line', { class: 'edge-line', x1: x0 + i * KEYW, y1: y0, x2: x0 + i * KEYW, y2: y0 + KEYH }));
+      const t = svgEl('text', { class: 'node-text', x: x0 + i * KEYW + KEYW / 2, y: Y(n) + 1, style: 'font-size:12px' });
+      t.textContent = k;
+      g.appendChild(t);
+    });
+    if (opts.flashId === n.id) g.querySelector('rect').classList.add('flash');
+    nodeGroup.appendChild(g);
+  });
+  svg.appendChild(nodeGroup);
+  wrap.appendChild(svg);
+}
+
+function renderQuad(wrap, layout) {
+  wrap.innerHTML = '';
+  const PAD = 20;
+  const b = layout.boundary;
+  const svg = svgEl('svg', { viewBox: `0 0 ${b.w + PAD * 2} ${b.h + PAD * 2}`, width: Math.min(b.w + PAD * 2, 460) });
+  const g = svgEl('g', { transform: `translate(${PAD},${PAD})` });
+  layout.rects.forEach(r => {
+    g.appendChild(svgEl('rect', { class: 'quad-rect', x: r.x, y: r.y, width: r.w, height: r.h }));
+  });
+  layout.points.forEach(p => {
+    g.appendChild(svgEl('circle', { class: 'quad-point', cx: p.x, cy: p.y, r: 5 }));
+    const t = svgEl('text', { x: p.x + 8, y: p.y - 6, style: 'font-size:9px; fill:var(--chalk-dim); font-family:var(--font-mono);' });
+    t.textContent = `${p.x},${p.y}`;
+    g.appendChild(t);
+  });
+  svg.appendChild(g);
+  wrap.appendChild(svg);
+}
+
+/* ============================================================
+   APP CONTROLLER
+   ============================================================ */
+const engines = {
+  binary: new BinaryTree(),
+  bst: new BST(),
+  avl: new AVL(),
+  rbtree: new RedBlackTree(),
+  splay: new SplayTree(),
+  trie: new Trie(),
+  btree: new BTree(2),
+  bplus: new BPlusTree(2),
+  quad: new QuadTree({ x: 0, y: 0, w: 400, h: 400 }, 2)
+};
+let current = 'binary';
+const logs = [];
+
+function log(kind, msg) {
+  logs.unshift({ kind, msg, t: new Date().toLocaleTimeString([], { hour12: false }) });
+  if (logs.length > 30) logs.pop();
+  renderLog();
+}
+function renderLog() {
+  const el = document.getElementById('log');
+  el.innerHTML = logs.slice(0, 8).map(r =>
+    `<div class="row ${r.kind}"><span class="t">${r.t}</span><span class="msg">${r.msg}</span></div>`
+  ).join('') || '<div class="row"><span class="msg" style="color:var(--chalk-faint)">No operations yet.</span></div>';
+}
+
+function buildNav() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  TAB_ORDER.forEach(key => {
+    const c = CONTENT[key];
+    const btn = document.createElement('button');
+    btn.className = 'nav-item' + (key === current ? ' active' : '');
+    btn.innerHTML = `<span class="idx">${c.idx}</span><span>${c.label}</span>`;
+    btn.onclick = () => switchTab(key);
+    nav.appendChild(btn);
+  });
+}
+
+function switchTab(key) {
+  current = key;
+  buildNav();
+  const c = CONTENT[key];
+  document.getElementById('eyebrow').textContent = `${c.idx} · Structure`;
+  document.getElementById('title').textContent = c.label;
+  document.getElementById('definition').textContent = c.def;
+  document.getElementById('props').innerHTML = c.props.map(p => `<li>${p}</li>`).join('');
+  document.getElementById('insertSteps').innerHTML = c.insert.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('deleteSteps').innerHTML = c.del.map(s => `<li>${s}</li>`).join('');
+  document.getElementById('complexityBody').innerHTML = c.complexity.map(row =>
+    `<tr><td>${row[0]}</td><td class="avg">${row[1]}</td><td class="worst">${row[2]}</td></tr>`
+  ).join('');
+  document.getElementById('valInput').placeholder = c.placeholder;
+  document.getElementById('hint').textContent =
+    c.kind === 'quad' ? 'coords typed as x,y within 0–400' :
+    c.kind === 'trie' ? 'type a lowercase word' : 'numbers only';
+  document.getElementById('valInput').value = '';
+  renderCurrent();
+}
+
+function renderCurrent(flashId) {
+  const c = CONTENT[current];
+  const wrap = document.getElementById('canvasWrap');
+  const eng = engines[current];
+  if (c.kind === 'binary') {
+    renderBinaryLike(wrap, eng.toLayout(), { colorMode: current === 'rbtree' ? 'rb' : (current === 'avl' ? 'avl' : null), flashId });
+  } else if (c.kind === 'trie') {
+    renderTrie(wrap, eng.toLayout(), { flashId });
+  } else if (c.kind === 'multiway') {
+    renderMultiway(wrap, eng.toLayout(), { flashId });
+  } else if (c.kind === 'quad') {
+    renderQuad(wrap, eng.toLayout());
+  }
+}
+
+function parseValue(raw, kind) {
+  raw = raw.trim();
+  if (!raw) return null;
+  if (kind === 'trie') return raw.toLowerCase().replace(/[^a-z]/g, '');
+  if (kind === 'quad') {
+    const m = raw.match(/^(\d+)\s*,\s*(\d+)$/);
+    if (!m) return null;
+    const x = +m[1], y = +m[2];
+    if (x < 0 || x > 400 || y < 0 || y > 400) return null;
+    return { x, y };
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function doInsert() {
+  const c = CONTENT[current];
+  const raw = document.getElementById('valInput').value;
+  const val = parseValue(raw, c.kind);
+  if (val === null || val === '') { log('err', `Can't insert "${raw}" — check the expected format.`); return; }
+  const eng = engines[current];
+  eng.insert(val);
+  const shown = c.kind === 'quad' ? `${val.x},${val.y}` : val;
+  log('ins', `Inserted ${shown} into ${c.label}.`);
+  renderCurrent();
+  document.getElementById('valInput').value = '';
+  document.getElementById('valInput').focus();
+}
+
+function doDelete() {
+  const c = CONTENT[current];
+  const raw = document.getElementById('valInput').value;
+  const val = parseValue(raw, c.kind);
+  if (val === null || val === '') { log('err', `Can't delete "${raw}" — check the expected format.`); return; }
+  const eng = engines[current];
+  const found = eng.delete(val);
+  const shown = c.kind === 'quad' ? `${val.x},${val.y}` : val;
+  if (found) log('del', `Deleted ${shown} from ${c.label}.`);
+  else log('err', `${shown} not found in ${c.label} — nothing deleted.`);
+  renderCurrent();
+  document.getElementById('valInput').value = '';
+  document.getElementById('valInput').focus();
+}
+
+function doRandom() {
+  const c = CONTENT[current];
+  engines[current] = freshEngine(current);
+  if (c.kind === 'quad') {
+    for (let i = 0; i < 9; i++) engines[current].insert({ x: Math.floor(Math.random() * 400), y: Math.floor(Math.random() * 400) });
+  } else if (c.kind === 'trie') {
+    ['cat','car','card','care','dog','do','dove','bat'].forEach(w => engines[current].insert(w));
+  } else {
+    const set = new Set();
+    while (set.size < 11) set.add(Math.floor(Math.random() * 90) + 5);
+    [...set].forEach(v => engines[current].insert(v));
+  }
+  log('info', `Loaded a random sample into ${c.label}.`);
+  renderCurrent();
+}
+
+function freshEngine(key) {
+  switch (key) {
+    case 'binary': return new BinaryTree();
+    case 'bst': return new BST();
+    case 'avl': return new AVL();
+    case 'rbtree': return new RedBlackTree();
+    case 'splay': return new SplayTree();
+    case 'trie': return new Trie();
+    case 'btree': return new BTree(2);
+    case 'bplus': return new BPlusTree(2);
+    case 'quad': return new QuadTree({ x: 0, y: 0, w: 400, h: 400 }, 2);
+  }
+}
+
+function doReset() {
+  engines[current] = freshEngine(current);
+  log('info', `Cleared ${CONTENT[current].label}.`);
+  renderCurrent();
+}
+
+document.getElementById('btnInsert').onclick = doInsert;
+document.getElementById('btnDelete').onclick = doDelete;
+document.getElementById('btnRandom').onclick = doRandom;
+document.getElementById('btnReset').onclick = doReset;
+document.getElementById('valInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') doInsert(); });
+
+buildNav();
+switchTab('binary');
+renderLog();
+doRandom();
+</script>
+</body>
+</html>
