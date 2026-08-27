@@ -1,0 +1,34 @@
+#include <stdio.h>
+
+#define MAX 5
+
+int queue[MAX];
+int front = 0;
+int rear = 0;
+
+void enqueue(int x)
+{
+    if(rear == MAX)
+    {
+        printf("Overflow");
+    }
+    else
+    {
+        queue[rear] = x;
+        rear++;
+
+        printf("Value is %d", x);
+    }
+}
+
+int main()
+{
+    int x;
+
+    printf("Enter the value: ");
+    scanf("%d", &x);
+
+    enqueue(x);
+
+    return 0;
+}
