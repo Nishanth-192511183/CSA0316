@@ -1,0 +1,31 @@
+#include <stdio.h>
+
+#define MAX 5
+
+int stack[MAX] = {10, 20, 30};
+int top = 2;
+
+int pop()
+{
+    if(top == -1)
+    {
+        printf("Underflow");
+        return -1;
+    }
+
+    return stack[top--];
+}
+
+int main()
+{
+    int value;
+
+    value = pop();
+
+    if(value != -1)
+    {
+        printf("Popped element: %d", value);
+    }
+
+    return 0;
+}
